@@ -247,25 +247,6 @@ pub fn get_settings(context: State<Context>) -> Result<impl Responder, Error> {
     }))
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SettingsDto {
-    pub block0_hash: String,
-    pub block0_time: SystemTime,
-    pub curr_slot_start_time: Option<SystemTime>,
-    pub consensus_version: String,
-    pub fees: SettingsFeesDto,
-    pub max_txs_per_block: u32,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SettingsFeesDto {
-    constant: u64,
-    coefficient: u64,
-    certificate: u64,
-}
-
 pub fn get_shutdown(context: State<Context>) -> Result<impl Responder, Error> {
     // Server finishes ongoing tasks before stopping, so user will get response to this request
     // Node should be shutdown automatically when server stopping is finished
