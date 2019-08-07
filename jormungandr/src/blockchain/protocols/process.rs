@@ -1,4 +1,4 @@
-use super::{Blockchain, Error, ErrorKind, PreCheckedHeader, Ref};
+use super::{Blockchain, Branch, Error, ErrorKind, PreCheckedHeader, Ref};
 use crate::blockcfg::{Block, Header, HeaderHash};
 use crate::intercom::{self, NetworkMsg};
 use crate::network::p2p::topology::NodeId;
@@ -25,6 +25,7 @@ pub fn process_leadership_block(
 
 pub fn process_block_announcement(
     mut blockchain: Blockchain,
+    branch: Branch,
     header: Header,
     node_id: NodeId,
     mut network_msg_box: MessageBox<NetworkMsg>,
@@ -40,7 +41,7 @@ pub fn process_block_announcement(
             PreCheckedHeader::MissingParent { header, .. } => {
                 debug!(logger, "block is missing a locally stored parent");
                 let to = header.hash();
-                Either::B(blockchain.get_checkpoints(to).map(move |from| {
+                Either::B(blockchain.get_checkpoints(branch).map(move |from| {
                     network_msg_box
                         .try_send(NetworkMsg::PullHeaders { node_id, from, to })
                         .unwrap_or_else(move |err| {
