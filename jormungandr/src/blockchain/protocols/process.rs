@@ -52,7 +52,10 @@ pub fn process_block_announcement(
                 }))
             }
             PreCheckedHeader::HeaderWithCache { header, parent_ref } => {
-                debug!(logger, "Block announcement is interesting, fetch block");
+                debug!(
+                    logger,
+                    "Announced block has a locally stored parent, fetch it"
+                );
                 network_msg_box
                     .try_send(NetworkMsg::GetNextBlock(node_id, header.hash()))
                     .unwrap_or_else(move |err| {
