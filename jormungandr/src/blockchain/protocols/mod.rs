@@ -51,6 +51,7 @@ See Internal documentation for more details: doc/internal_design.md
 
 mod branch;
 mod multiverse;
+mod process;
 mod reference;
 mod reference_cache;
 mod storage;
@@ -671,5 +672,12 @@ impl Blockchain {
                             .map(|(branch, _)| branch)
                     })
             })
+    }
+
+    pub fn get_checkpoints(
+        &self,
+        to: HeaderHash,
+    ) -> impl Future<Item = Vec<HeaderHash>, Error = Error> {
+        self.storage.get_checkpoints(to).map_err(|e| e.into())
     }
 }

@@ -124,6 +124,14 @@ impl Storage {
             }
         })
     }
+
+    pub fn get_checkpoints(
+        &self,
+        to: HeaderHash,
+    ) -> impl Future<Item = Vec<HeaderHash>, Error = StorageError> {
+        unimplemented!();
+        future::ok(vec![])
+    }
 }
 
 impl Stream for BlockStream {
