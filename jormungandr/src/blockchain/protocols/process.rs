@@ -7,6 +7,7 @@ use chain_core::property::HasHeader;
 
 use futures::future::{self, Either};
 use futures::prelude::*;
+use futures::stream;
 use slog::Logger;
 
 pub fn process_leadership_block(
@@ -102,4 +103,35 @@ pub fn process_network_block(
                 Either::B(post_check_and_apply)
             }
         })
+}
+
+pub fn process_chain_headers_into_block_request<S>(
+    blockchain: Blockchain,
+    headers: S,
+    logger: Logger,
+) -> impl Future<Item = Vec<HeaderHash>, Error = Error>
+where
+    S: Stream<Item = Header>,
+{
+    headers.for_each(|header| {
+        blockchain
+            .pre_check_header(header)
+            .and_then(move |pre_checked| match pre_checked {
+                PreCheckedHeader::AlreadyPresent { .. } => {
+                    // The block is already present. This may happen
+                    // if the peer has started from an earlier checkpoint
+                    // than our tip, so ignore this and proceed.
+                    Ok(None)
+                }
+                PreCheckedHeader::MissingParent { header, .. } => {
+                    // TODO: this fails on the first header after the
+                    // immediate descendant of the local tip. Need branch storage
+                    // that would store the whole header chain without blocks,
+                    // so that the chain can be pre-validated first and blocks
+                    // fetched afterwards in arbitrary order.
+                    Err(ErrorKind::MissingParentBlockFromStorage(header).into())
+                }
+                PreCheckedHeader::HeaderWithCache { header, parent_ref } => {}
+            })
+    })
 }
